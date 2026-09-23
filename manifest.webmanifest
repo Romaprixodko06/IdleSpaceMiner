@@ -1,0 +1,10 @@
+{
+  "name": "Space Idle Miner",
+  "short_name": "Space Miner",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#05080c",
+  "theme_color": "#071014",
+  "orientation": "portrait",
+  "lang": "ru"
+}

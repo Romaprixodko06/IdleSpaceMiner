@@ -3,8 +3,8 @@
   "short_name": "Space Miner",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#05080c",
-  "theme_color": "#071014",
-  "orientation": "portrait",
-  "lang": "ru"
+  "background_color": "#030509",
+  "theme_color": "#030509",
+  "lang": "ru",
+  "orientation": "portrait"
 }

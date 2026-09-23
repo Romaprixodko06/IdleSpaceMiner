@@ -1,49 +1,445 @@
-<!doctype html>
-<html lang="ru"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#071014"><link rel="manifest" href="manifest.webmanifest">
-<title>Space Idle Miner</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#04070a;color:#eaffff;font-family:system-ui,sans-serif}
-button{color:inherit;background:#0a171c;border:1px solid #24545d;border-radius:12px;padding:10px} .app{max-width:560px;height:100%;margin:auto;background:radial-gradient(circle at 50% 15%,#12323a,#071014 48%,#030507);display:flex;flex-direction:column}
-.top{padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:7px}.card,.item{background:#09161bcc;border:1px solid #1d4d55;border-radius:13px;padding:9px}.small{font-size:11px;color:#86a9ad}.v{font-weight:800;font-size:18px}.cyan{color:#5ffcff}.green{color:#72ff9a}.pink{color:#ff72d8}
-main{flex:1;overflow:auto;padding:8px 12px 82px}.screen{display:none}.screen.active{display:block}.title{font-size:23px;font-weight:900;margin:4px 0 8px}
-.asteroid{height:250px;border-radius:24px;border:1px solid #28606a;position:relative;overflow:hidden;background:radial-gradient(circle at 35% 35%,#293d51,#101a25 35%,#070b10 75%);box-shadow:inset 0 0 35px #00dfff22}
-.asteroid:after{content:"☄️";position:absolute;font-size:90px;left:32%;top:31%;filter:drop-shadow(0 0 16px #9df)}
-.w{position:absolute;font-size:34px;z-index:2;animation:f 2.5s ease-in-out infinite}.w1{left:12%;top:55%}.w2{left:52%;top:20%;animation-delay:.7s}.w3{left:73%;top:61%;animation-delay:1.2s}.d{position:absolute;right:10%;top:10%;font-size:28px;z-index:3;animation:d 3s linear infinite}
-@keyframes f{50%{transform:translateY(-7px)}}@keyframes d{50%{transform:translate(-20px,12px)}}
-.row{display:flex;justify-content:space-between;gap:8px;align-items:center}.progress{height:8px;background:#071014;border-radius:8px;overflow:hidden;margin-top:7px}.bar{height:100%;width:50%;background:linear-gradient(90deg,#27f5ff,#72ff9a,#ff6bd8)}
-.sell{width:100%;margin:10px 0;background:linear-gradient(90deg,#123d42,#351532);font-size:20px;font-weight:900;border-color:#54faff;padding:15px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.list{display:grid;gap:8px;margin-top:8px}.notice{padding:9px;border:1px solid #28616a;border-radius:10px;background:#0b2227;margin:8px 0;font-size:13px}
-.nav{position:fixed;bottom:0;left:0;right:0;max-width:560px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:7px;background:#05090ded;border-top:1px solid #183b42;backdrop-filter:blur(10px)}.nav button{font-size:11px;padding:7px 2px}
-</style></head><body>
-<div class="app"><header class="top">
-<div class="card"><div class="small">УРОВЕНЬ</div><div class="v"><span id="level">1</span> · <span id="exp">0</span> EXP</div></div>
-<div class="card"><div class="small">КОСМИКИ</div><div class="v green" id="money">0</div></div>
-<div class="card"><div class="small">РУДА</div><div class="v cyan" id="ore">0 / 25</div></div>
-<div class="card"><div class="small">КРИСТАЛЛЫ</div><div class="v pink" id="crystals">1</div></div>
-</header><main>
-<section id="game" class="screen active"><div class="title">⛏️ Space Idle Miner</div>
-<div class="notice" id="notice">☀️ Ясно · добыча работает</div>
-<div class="asteroid"><div class="w w1">👨‍🚀</div><div class="w w2">👩‍🚀</div><div class="w w3">👨‍🚀</div><div class="d">🤖</div></div>
-<div class="card" style="margin-top:8px"><div class="row"><b>Астероид #1 · уровень 1</b><span id="timer" class="cyan">03:00</span></div><div class="small">Добыча: <span id="rate">1</span> руды/мин · редкая руда 0.15%</div><div class="progress"><div class="bar" id="bar"></div></div></div>
-<button class="sell" id="sell">ПРОДАТЬ РУДУ · <span id="price">1</span> 🪙</button>
-<div class="grid"><button id="worker">+ Рабочий · 100</button><button id="zone">+ Зона · 1000</button><button id="drone">🤖 Дрон · 500</button><button id="boost">⚡ 2× руда · 5 💎</button></div>
-<div class="notice" id="event">Событие: спокойно.</div></section>
-<section id="quests" class="screen"><h2>🎯 Квесты</h2><div class="list"><div class="item">Продать 100 руды — <b>+2 💎</b><br><span id="q1">0</span>/100</div><div class="item">Добыть 250 руды — <b>+1 💎</b><br><span id="q2">0</span>/250</div><div class="item">Накопить 1000 Космиков — <b>+3 💎</b></div></div></section>
-<section id="lab" class="screen"><h2>🧪 Лаборатория</h2><div class="item">Очки исследований: <b id="rp">0</b></div><div class="list"><button onclick="research(50)">Эффективность · 50 RP</button><button onclick="research(100)">Дроны · 100 RP</button></div></section>
-<section id="stats" class="screen"><h2>📊 Статистика</h2><div class="list"><div class="item">Всего добыто: <b id="total">0</b></div><div class="item">Продано: <b id="sold">0</b></div><div class="item">Дронов: <b id="drones">0</b></div></div></section>
-<section id="settings" class="screen"><h2>⚙️ Настройки</h2><div class="list"><button onclick="save()">💾 Сохранить</button><button onclick="newEra()">🔄 Новая эра</button><button onclick="dev()">🛠️ Developer Panel</button><div class="item">Space Idle Miner · Web v0.1</div></div></section>
-</main><nav class="nav"><button onclick="show('game')">⛏️<br>Игра</button><button onclick="show('quests')">🎯<br>Квесты</button><button onclick="show('lab')">🧪<br>Лаб</button><button onclick="show('stats')">📊<br>Статы</button><button onclick="show('settings')">⚙️<br>Настройки</button></nav></div>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#05080c"><link rel="manifest" href="manifest.webmanifest"><title>Space Idle Miner</title>
+<style>*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#030509;color:#eaffff;font-family:system-ui,sans-serif}button{color:inherit;background:#0a171c;border:1px solid #24545d;border-radius:11px;padding:9px}.app{max-width:600px;height:100%;margin:auto;display:flex;flex-direction:column;background:radial-gradient(circle at 50% 8%,#12343b,#071014 45%,#030509)}.top{padding:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.card,.item{background:#08151acc;border:1px solid #1c4a52;border-radius:12px;padding:8px}.small{font-size:10px;color:#7fa6ab}.v{font-weight:900;font-size:15px}.c{color:#5ffcff}.g{color:#70ff9a}.p{color:#ff70d7}main{flex:1;overflow:auto;padding:7px 10px 82px}.screen{display:none}.screen.active{display:block}.title{font-size:22px;font-weight:900}.notice{padding:8px;border:1px solid #285e67;border-radius:10px;background:#0a2227;margin:7px 0;font-size:12px}.asteroid{height:225px;border-radius:22px;border:1px solid #27616a;position:relative;background:radial-gradient(circle at 35% 35%,#31475d,#111b28 38%,#060a10 78%);overflow:hidden}.asteroid:after{content:"☄️";position:absolute;font-size:85px;left:32%;top:32%}.w{position:absolute;font-size:31px;z-index:2;animation:f 2.5s ease-in-out infinite}.a{left:10%;top:56%}.b{left:50%;top:18%}.c2{left:73%;top:62%}.dr{position:absolute;right:9%;top:9%;font-size:27px}@keyframes f{50%{transform:translateY(-7px)}}.progress{height:7px;background:#061014;border-radius:8px;overflow:hidden;margin-top:6px}.bar{height:100%;background:linear-gradient(90deg,#24efff,#68ff94,#ff68d8)}.sell{width:100%;margin:8px 0;background:linear-gradient(90deg,#123d43,#351532);font-size:19px;font-weight:900;border-color:#53faff;padding:14px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.list{display:grid;gap:7px;margin-top:7px}.nav{position:fixed;bottom:0;left:0;right:0;max-width:600px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:6px;background:#04080dee;border-top:1px solid #173940}.nav button{font-size:10px;padding:6px 2px}.modal{position:fixed;inset:0;background:#000b;display:none;align-items:flex-end;z-index:10}.modal.on{display:flex}.panel{width:100%;max-height:88%;overflow:auto;background:#071116;border:1px solid #24606a;border-radius:18px 18px 0 0;padding:12px}h2{margin:4px 0 8px}</style></head><body><div class="app">
+<header class="top"><div class="card"><div class="small">УР.</div><div class="v" id="lv">1</div></div><div class="card"><div class="small">КОСМИКИ</div><div class="v g" id="m">0</div></div><div class="card"><div class="small">РУДА</div><div class="v c" id="o">0/25</div></div><div class="card"><div class="small">💎</div><div class="v p" id="cr">1</div></div></header>
+<main><section id="game" class="screen active"><div class="title">⛏️ Space Idle Miner</div><div class="notice" id="weather">☀️ Ясно · ×1</div><div class="asteroid"><span class="w a">👨‍🚀</span><span class="w b">👩‍🚀</span><span class="w c2">👨‍🚀</span><span class="dr">🤖</span></div><div class="item"><b id="zt">Зона 1 · Астероид 1</b> <span id="tm" class="c">03:00</span><br><small>Добыча <b id="rate">1</b>/мин · редкая <b id="rare">0.15%</b></small><div class="progress"><div class="bar" id="bar"></div></div></div><button class="sell" id="sell">ПРОДАТЬ РУДУ · <span id="price">1</span> 🪙</button><div class="grid"><button id="wb">+ Рабочий · 100</button><button id="zb">+ Зона</button><button id="db">🤖 Дрон</button><button id="bb">⚡ 2× · 5💎</button></div><div class="notice" id="event">Событие: спокойно.</div></section>
+<section id="quests" class="screen"><h2>🎯 Квесты</h2><div class="list" id="ql"></div></section><section id="more" class="screen"><h2>🚀 Системы</h2><div class="list"><button onclick="show('lab')">🧪 Лаборатория</button><button onclick="show('pets')">🐾 Питомцы</button><button onclick="show('cards')">🃏 Карты</button><button onclick="show('equip')">🎒 Экипировка</button><button onclick="show('ach')">🏆 Достижения</button><button onclick="show('challenge')">⚡ Испытания</button><button onclick="show('story')">📖 История</button><button onclick="show('cases')">📦 Кейсы</button><button onclick="show('safes')">🔐 Сейфы</button><button onclick="show('skills')">🧠 Навыки</button></div></section>
+<section id="lab" class="screen"><h2>🧪 Лаборатория</h2><div class="item">RP: <b id="rp">0</b></div><div class="list" id="rl"></div></section><section id="pets" class="screen"><h2>🐾 Питомцы</h2><div class="list" id="pl"></div></section><section id="cards" class="screen"><h2>🃏 Карты</h2><div class="list" id="cl"></div></section><section id="equip" class="screen"><h2>🎒 Экипировка</h2><div class="list" id="el"></div></section><section id="ach" class="screen"><h2>🏆 Достижения</h2><div class="list" id="al"></div></section><section id="challenge" class="screen"><h2>⚡ Испытания</h2><div class="list"><div class="item">Добудь 100 руды за 10 минут · +1💎</div><div class="item">Продай 300 руды · +2💎</div><div class="item">Найди редкую руду · +3💎</div></div></section>
+
+<section id="story" class="screen"><h2>📖 История капитана</h2><div class="notice" id="storyBox"></div><button onclick="storyNext()">Продолжить</button></section>
+<section id="cases" class="screen"><h2>📦 Кейсы</h2><div class="notice">Открытие сопровождается анимацией. История открытий сохраняется локально.</div><div class="grid">
+<button onclick="openCase('common')">Обычный · 500 🪙</button>
+<button onclick="openCase('rare')">Редкий · 50 💎</button>
+<button onclick="openCase('legendary')">Легендарный · 100 💎</button></div><div class="list" id="caseLog"></div></section>
+<section id="safes" class="screen"><h2>🔐 Денежные сейфы</h2><div class="list" id="safeList"></div></section>
+<section id="skills" class="screen"><h2>🧠 Навыки рабочих</h2><div class="notice">У каждого астероида три направления: добыча, офлайн и удача.</div><div class="list" id="skillList"></div></section>
+<section id="stats" class="screen"><h2>📊 Статистика</h2><div class="list" id="sl"></div></section><section id="settings" class="screen"><h2>⚙️ Настройки</h2><div class="list"><button onclick="save()">💾 Сохранить</button><button onclick="era()">🔄 Новая эра</button><button onclick="dev()">🛠️ Developer Panel</button><div class="item">FINAL · Space Idle Miner · все основные системы</div></div></section></main>
+<nav class="nav"><button onclick="show('game')">⛏️<br>Игра</button><button onclick="show('quests')">🎯<br>Квесты</button><button onclick="show('more')">🚀<br>Системы</button><button onclick="show('stats')">📊<br>Статы</button><button onclick="show('settings')">⚙️<br>Ещё</button></nav></div>
+<div class="modal" id="modal"><div class="panel"><button onclick="closeM()">✕</button><div id="mb"></div></div></div>
 <script>
-const K='SIM_SAVE_01';let s=JSON.parse(localStorage.getItem(K)||'null')||{money:0,ore:0,crystals:1,level:1,exp:0,workers:1,drones:0,zones:1,rp:0,total:0,sold:0,last:Date.now(),boost:0};
-function $(x){return document.getElementById(x)} function save(){s.last=Date.now();localStorage.setItem(K,JSON.stringify(s))}
-function offline(){let g=Math.floor(Math.min(28800,Math.max(0,(Date.now()-s.last)/1000))/60*s.workers*.5);if(g){s.ore=Math.min(25*s.zones,s.ore+g);s.total+=g;$('event').textContent='Получено '+g+' руды за время отсутствия.'}}
-function render(){$('money').textContent=Math.floor(s.money);$('ore').textContent=Math.floor(s.ore)+' / '+25*s.zones;$('crystals').textContent=s.crystals;$('level').textContent=s.level;$('exp').textContent=Math.floor(s.exp);$('rate').textContent=s.workers.toFixed(1);$('q1').textContent=Math.min(100,s.sold);$('q2').textContent=Math.min(250,Math.floor(s.total));$('rp').textContent=s.rp;$('total').textContent=Math.floor(s.total);$('sold').textContent=Math.floor(s.sold);$('drones').textContent=s.drones;$('price').textContent=1+Math.floor(Math.random()*10)}
-setInterval(()=>{let g=s.workers/60*(s.boost?2:1);s.ore=Math.min(25*s.zones,s.ore+g);s.total+=g;s.exp+=g;if(s.exp>=s.level*100){s.exp-=s.level*100;s.level++;$('event').textContent='🎉 Новый уровень: '+s.level}render()},1000);
-$('sell').onclick=()=>{let n=Math.floor(s.ore);if(!n)return;let p=+$('price').textContent;s.ore-=n;s.money+=n*p;s.sold+=n;s.rp+=Math.floor(n/100);render();save()};
-$('worker').onclick=()=>{if(s.money>=100){s.money-=100;s.workers++;render()}};$('zone').onclick=()=>{let c=1000*s.zones;if(s.money>=c){s.money-=c;s.zones++;render()}};$('drone').onclick=()=>{let c=Math.floor(500*Math.pow(1.1,s.drones));if(s.money>=c){s.money-=c;s.drones++;s.workers+=.5;render()}};$('boost').onclick=()=>{if(s.crystals>=5){s.crystals-=5;s.boost=1;setTimeout(()=>s.boost=0,300000);render()}};
-function research(c){if(s.rp>=c){s.rp-=c;s.workers+=.25;render();save()}}function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active')}
-function newEra(){if(confirm('Начать Новую эру?')){s.money=Math.floor(s.money*.25);s.crystals=Math.floor(s.crystals*.5);s.ore=0;s.workers=1;s.drones=0;s.zones=1;s.level=1;s.exp=0;save();render()}}
-function dev(){let p=prompt('Пароль Developer Panel');if(p==='List1448'){let x=prompt('Команда: money 100000 | crystals 100 | ore 25');if(x){let a=x.split(' ');if(a[0] in s)s[a[0]]=Number(a[1]);save();render()}}else if(p!==null)alert('Неверный пароль')}
-offline();render();setInterval(save,30000);addEventListener('beforeunload',save);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
-</script></body></html>
+const K='SIM_V03',D={money:0,ore:0,crystals:1,level:1,exp:0,workers:1,drones:0,zones:1,rp:0,total:0,sold:0,rareOre:0,last:Date.now(),boost:0,round:1,pets:{},cards:{},equip:{},research:{},story:0,cases:[],safes:{small:0,medium:0,large:0},skills:{mining:0,offline:0,luck:0},daily:{day:'',done:[0,0,0]},weekly:{week:'',done:[0,0]},tutorial:0,events:{until:0,type:''},records:{bestMoney:0,bestOre:0},settings:{sound:true,music:true,brightness:100,fps:60,graphics:'High'}};
+let s=Object.assign(D,JSON.parse(localStorage.getItem(K)||'{}')),price=1,weather=1,event=1;
+const $=x=>document.getElementById(x);function save(){s.last=Date.now();localStorage.setItem(K,JSON.stringify(s))}function cap(){return 25*s.zones+(s.equip['Грави-рюкзак']?25:0)}
+function rate(){let r=s.workers+s.drones*.5;if(s.boost>Date.now())r*=2;if(s.equip['Титановая лопата'])r*=1.1;if(s.equip['Нео-костюм'])r*=1.2;if(s.equip['Магнитные перчатки'])r*=1.3;if(s.research['Эффективность'])r*=1.1;return r*weather*event}
+function render(){$('m').textContent=Math.floor(s.money);$('o').textContent=Math.floor(s.ore)+'/'+cap();$('cr').textContent=s.crystals;$('lv').textContent=s.level;$('rate').textContent=rate().toFixed(1);$('zt').textContent='Зона '+s.zones+' · Астероид '+s.zones;$('rare').textContent=(.15+(s.research['Удача']?.1:0)).toFixed(2)+'%';$('rp').textContent=s.rp;
+$('ql').innerHTML=['Продать 100 руды · +2💎','Добыть 250 руды · +1💎','Накопить 1000 Космиков · +3💎'].map(x=>'<div class="item">'+x+'</div>').join('');
+$('rl').innerHTML=[['Эффективность',50],['Удача',150],['Автоматизация',250]].map(x=>'<div class="item">🔬 '+x[0]+' · '+x[1]+' RP <button onclick="research(\''+x[0]+'\','+x[1]+')">'+(s.research[x[0]]?'Изучено':'Изучить')+'</button></div>').join('');
+$('pl').innerHTML=['Лунный кот · 200','Нео-ящер · 1000','Кибер-ворон · 5000'].map((x,i)=>'<div class="item">🐾 '+x+' 🪙 <button onclick="pet('+i+')">Купить/уровень</button></div>').join('');
+$('cl').innerHTML=['Капитан Нова · +5% добычи','Инженер Кай · +10% офлайн','Разведчик Лира · +0.1% редкой','Техник Рэй · -10% цены','Пилот Зет · +10% дроны'].map((x,i)=>'<div class="item">🃏 '+x+' <button onclick="card('+i+')">'+(s.cards[i]?'Получена':'Шанс 0.01%')+'</button></div>').join('');
+$('el').innerHTML=[['Титановая лопата',500],['Нео-костюм',2000],['Грави-рюкзак',5000],['Умный шлем',10000],['Магнитные перчатки',25000]].map(x=>'<div class="item">🎒 '+x[0]+' · '+x[1]+' 🪙 <button onclick="equip(\''+x[0]+'\','+x[1]+')">'+(s.equip[x[0]]?'Куплено':'Купить')+'</button></div>').join('');
+$('al').innerHTML=['Первая продажа +1💎','1000 руды +3💎','100000 Космиков +5💎','Первый дрон +2💎','Пять зон +5💎'].map(x=>'<div class="item">🏆 '+x+'</div>').join('');
+$('sl').innerHTML=[`Добыто: ${Math.floor(s.total)}`,`Продано: ${Math.floor(s.sold)}`,`Редкой руды: ${s.rareOre}`,`Дронов: ${s.drones}`,`Зон: ${s.zones}`,`Раунд: ${s.round}`].map(x=>'<div class="item">'+x+'</div>').join('')}
+function tick(){let g=rate()/60;s.ore=Math.min(cap(),s.ore+g);s.total+=g;s.exp+=g;if(s.exp>=s.level*100){s.exp-=s.level*100;s.level++;$('event').textContent='🎉 Новый уровень: '+s.level}render()}
+$('sell').onclick=()=>{let n=Math.floor(s.ore);if(!n)return;s.ore-=n;s.money+=n*price;s.sold+=n;s.rp+=Math.floor(n/100);render();save()}
+$('wb').onclick=()=>{let c=100*s.workers;if(s.money>=c){s.money-=c;s.workers++;save();render()}};$('zb').onclick=()=>{let c=1000*s.zones;if(s.money>=c){s.money-=c;s.zones++;save();render()}};$('db').onclick=()=>{let c=Math.floor(500*Math.pow(1.1,s.drones));if(s.money>=c){s.money-=c;s.drones++;save();render()}};$('bb').onclick=()=>{if(s.crystals>=5){s.crystals-=5;s.boost=Date.now()+300000;save();render()}}
+function research(n,c){if(!s.research[n]&&s.rp>=c){s.rp-=c;s.research[n]=1;save();render()}}function pet(i){let c=[200,1000,5000][i];if(s.money>=c){s.money-=c;s.pets[i]=(s.pets[i]||0)+1;save();render()}}function card(i){if(!s.cards[i]&&Math.random()<.0001){s.cards[i]=1;$('event').textContent='🃏 Карта получена!';save();render()}else if(!s.cards[i])$('event').textContent='Карта не выпала. Шанс 0.01%'}
+function equip(n,c){if(!s.equip[n]&&s.money>=c){s.money-=c;s.equip[n]=1;save();render()}}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');render()}function era(){if(confirm('Начать Новую эру?')){s.money=Math.floor(s.money*.25);s.crystals=Math.floor(s.crystals*.5);s.ore=0;s.workers=1;s.drones=0;s.zones=1;s.level=1;s.exp=0;s.round++;save();render()}}
+function dev(){if(prompt('Пароль Developer Panel')==='List1448'){openM('<h2>Developer Panel</h2><div class="grid"><button onclick="s.money+=100000;save();render()">+100k 🪙</button><button onclick="s.crystals+=100;save();render()">+100 💎</button><button onclick="s.ore=cap();save();render()">Склад</button><button onclick="s.drones+=10;save();render()">+10 дронов</button><button onclick="s.zones+=5;save();render()">+5 зон</button><button onclick="s.level=100;save();render()">Ур.100</button></div>')}}
+function openM(x){$('mb').innerHTML=x;$('modal').classList.add('on')}function closeM(){$('modal').classList.remove('on')}
+let sec=Math.min(28800,Math.max(0,(Date.now()-s.last)/1000)),og=Math.floor(sec/60*rate()*.5);if(og){s.ore=Math.min(cap(),s.ore+og);s.total+=og;$('event').textContent='Получено '+og+' руды за время отсутствия.'}
+setInterval(tick,1000);setInterval(()=>{price=1+Math.floor(Math.random()*10);let r=Math.random();weather=r<.4?1:r<.65?.79:r<.85?1:2;$('weather').textContent=(weather===1?'☀️ Ясно':weather<1?'🌫️ Туман':'☄️ Рой комет')+' · ×'+weather;event=1;save()},600000);setInterval(save,30000);addEventListener('beforeunload',save);render();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
+
+/* ===== Space Idle Miner v0.3 systems ===== */
+const STORY=[
+ "Капитан: Сигнал с дальнего астероида принят. Начинаем добычу.",
+ "Капитан: Нам нужны Космики для расширения шахтёрского флота.",
+ "Капитан: Первый сектор стабилен. Откроем следующий, когда накопим ресурсы.",
+ "Капитан: Редкая руда встречается редко — следи за вспышками на астероидах.",
+ "Капитан: Дроны снимают рутину, но рабочие по-прежнему дают базовую добычу.",
+ "Капитан: Лаборатория открывает постоянные технологии.",
+ "Капитан: Питомцы и экипировка усиливают экспедицию.",
+ "Капитан: События и погода меняют темп добычи на короткое время.",
+ "Капитан: Нам удалось построить надёжные сейфы для заработанных Космиков.",
+ "Капитан: Экспедиция готова к новой эре."
+];
+const CASES={
+ common:[['100 Космиков',.55],['500 Космиков',.30],['1 💎',.12],['2 💎',.03]],
+ rare:[['5 💎',.50],['10 💎',.30],['25 💎',.15],['50 💎',.05]],
+ legendary:[['25 💎',.50],['50 💎',.30],['100 💎',.15],['250 💎',.05]]
+};
+const SAFE_COST={small:1000,medium:5000,large:20000};
+const SAFE_CAP={small:10000,medium:50000,large:250000};
+const DAY=()=>new Date().toISOString().slice(0,10);
+const WEEK=()=>{let d=new Date(), x=new Date(d); x.setDate(d.getDate()-((d.getDay()+6)%7)); return x.toISOString().slice(0,10)};
+function ensureV3(){
+  if(!s.story) s.story=0;
+  if(!s.cases) s.cases=[];
+  if(!s.safes) s.safes={small:0,medium:0,large:0};
+  if(!s.skills) s.skills={mining:0,offline:0,luck:0};
+  if(!s.daily) s.daily={day:DAY(),done:[0,0,0]};
+  if(!s.weekly) s.weekly={week:WEEK(),done:[0,0]};
+  if(!s.tutorial) s.tutorial=0;
+  if(!s.events) s.events={until:0,type:''};
+  if(!s.records) s.records={bestMoney:0,bestOre:0};
+  if(!s.settings) s.settings={sound:true,music:true,brightness:100,fps:60,graphics:'High'};
+}
+ensureV3();
+
+function resetTasks(){
+  if(s.daily.day!==DAY()){s.daily={day:DAY(),done:[0,0,0]};}
+  if(s.weekly.week!==WEEK()){s.weekly={week:WEEK(),done:[0,0]};}
+}
+function taskProgress(){
+  resetTasks();
+  return [
+    [Math.min(1,s.sold/100),2,0],
+    [Math.min(1,s.total/250),1,1],
+    [Math.min(1,s.money/1000),3,2]
+  ];
+}
+function claimDaily(i){
+  let q=taskProgress()[i];
+  if(q && q[0]>=1 && !s.daily.done[i]){
+    s.daily.done[i]=1;s.crystals+=q[1];save();renderV3();
+  }
+}
+function claimWeekly(i){
+  let goals=[s.sold>=1000,s.total>=3000], rewards=[5,8];
+  if(goals[i]&&!s.weekly.done[i]){s.weekly.done[i]=1;s.crystals+=rewards[i];save();renderV3();}
+}
+function renderV3(){
+  resetTasks();
+  let d=taskProgress();
+  $('ql').innerHTML=
+    d.map((q,i)=>'<div class="item">🎯 '+['Продать 100 руды','Добыть 250 руды','Накопить 1000 Космиков'][i]+
+    ' · +'+q[1]+'💎 <b>'+Math.floor(q[0]*100)+'%</b> '+
+    '<button onclick="claimDaily('+i+')">'+(s.daily.done[i]?'Получено':'Забрать')+'</button></div>').join('')+
+    '<div class="item"><b>Еженедельные</b><br>Продать 1000 руды · +5💎 <button onclick="claimWeekly(0)">'+(s.weekly.done[0]?'✓':'Забрать')+
+    '</button><br>Добыть 3000 руды · +8💎 <button onclick="claimWeekly(1)">'+(s.weekly.done[1]?'✓':'Забрать')+'</button></div>';
+  $('storyBox').textContent=STORY[Math.min(s.story,STORY.length-1)];
+  $('caseLog').innerHTML=s.cases.slice(-8).reverse().map(x=>'<div class="item">'+x+'</div>').join('')||'<div class="item">История пуста.</div>';
+  $('safeList').innerHTML=Object.keys(SAFE_CAP).map(k=>{
+    let names={small:'Малый',medium:'Средний',large:'Большой'};
+    return '<div class="item">🔐 '+names[k]+' сейф · '+s.safes[k]+'/'+SAFE_CAP[k]+' 🪙 · цена '+SAFE_COST[k]+' 🪙 '+
+    '<button onclick="buySafe(\''+k+'\')">Купить</button><button onclick="depositSafe(\''+k+'\')">Внести 1000</button></div>'
+  }).join('');
+  $('skillList').innerHTML=[
+    ['mining','⛏️ Добыча','+5% скорости за уровень'],
+    ['offline','🌙 Офлайн','+10% офлайн-эффективности за уровень'],
+    ['luck','🍀 Удача','+0.05% к шансу редкой руды за уровень']
+  ].map(x=>'<div class="item">'+x[1]+' · ур. '+s.skills[x[0]]+' · '+x[2]+
+  ' <button onclick="skillUp(\''+x[0]+'\')">Улучшить · '+(100*(s.skills[x[0]]+1))+' 🪙</button></div>').join('');
+}
+function storyNext(){if(s.story<STORY.length)s.story++;save();renderV3()}
+function buySafe(k){if(!s.safes[k]&&s.money>=SAFE_COST[k]){s.money-=SAFE_COST[k];s.safes[k]=1;save();render();renderV3()}}
+function depositSafe(k){if(s.safes[k]&&s.money>=1000){s.money-=1000;s.safes[k]=Math.min(SAFE_CAP[k],s.safes[k]+1000);save();render();renderV3()}}
+function skillUp(k){let c=100*(s.skills[k]+1);if(s.money>=c){s.money-=c;s.skills[k]++;save();render();renderV3()}}
+function openCase(kind){
+  if(kind==='common'&&s.money<500)return;
+  if(kind==='rare'&&s.crystals<50)return;
+  if(kind==='legendary'&&s.crystals<100)return;
+  if(kind==='common')s.money-=500; else s.crystals-=kind==='rare'?50:100;
+  let r=Math.random(), acc=0, win=CASES[kind][0][0];
+  for(const [name,p] of CASES[kind]){acc+=p;if(r<=acc){win=name;break}}
+  let m=win.match(/(\d+)/), n=m?+m[1]:0;
+  if(win.includes('💎'))s.crystals+=n; else s.money+=n;
+  s.cases.push('📦 '+kind+' → '+win+' · '+new Date().toLocaleTimeString());
+  save();render();renderV3();
+}
+function v3RateMultiplier(){
+  return 1+s.skills.mining*.05;
+}
+const oldRate=rate;
+rate=function(){
+  let r=oldRate()*v3RateMultiplier();
+  return r;
+};
+const oldOfflineSec=Math.min;
+function v3OfflineSeconds(){return Math.min(28800,Math.max(0,(Date.now()-s.last)/1000))}
+function eventRoll(){
+  let types=[
+    ['meteor', '☄️ Метеоритный дождь · добыча ×3',480000,3],
+    ['solar','☀️ Солнечная вспышка · редкая руда ×2',720000,1],
+    ['price','💰 Обвал цен · цена ×2',240000,1],
+    ['tech','🧪 Технопрорыв · улучшения −30%',480000,1],
+    ['failure','⚠️ Технический сбой · дроны медленнее',180000,.7],
+    ['radiation','☢️ Радиация · редкая руда отключена',180000,1],
+    ['energy','🔻 Энергокризис · доход −50%',180000,.5]
+  ];
+  if(Date.now()<s.events.until)return;
+  if(Math.random()<.35){
+    let e=types[Math.floor(Math.random()*types.length)];
+    s.events={until:Date.now()+e[2],type:e[0]};
+    $('event').textContent=e[1];
+  }else s.events={until:Date.now()+3600000,type:''};
+}
+const oldTick=tick;
+tick=function(){
+  eventRoll();
+  let mult=1;
+  if(s.events.type==='meteor')mult=3;
+  if(s.events.type==='energy')mult=.5;
+  if(s.events.type==='failure')mult=.7;
+  let g=rate()/60*mult;
+  s.ore=Math.min(cap(),s.ore+g);s.total+=g;s.exp+=g;
+  if(s.exp>=s.level*100){s.exp-=s.level*100;s.level++;$('event').textContent='🎉 Новый уровень: '+s.level}
+  s.records.bestMoney=Math.max(s.records.bestMoney,s.money);
+  s.records.bestOre=Math.max(s.records.bestOre,s.ore);
+  render();
+  renderV3();
+};
+const oldRender=render;
+render=function(){oldRender();renderV3()};
+render();
+renderV3();
+setInterval(renderV3,1000);
+</script>
+<div id="devPanel" class="devpanel" style="display:none">
+  <div class="devhead"><b>🛠 ПАНЕЛЬ РАЗРАБОТЧИКА</b><button onclick="closeDev()">✕</button></div>
+  <div class="devtabs">
+    <button onclick="devTab('res')">💰 Ресурсы</button><button onclick="devTab('mine')">⛏ Добыча</button>
+    <button onclick="devTab('prog')">📈 Прогресс</button><button onclick="devTab('world')">🌌 Мир</button>
+    <button onclick="devTab('systems')">⚙ Системы</button><button onclick="devTab('save')">💾 Сохранение</button>
+  </div>
+  <div id="devContent"></div>
+</div>
+<div id="devLogin" class="devlogin" style="display:none">
+  <div class="devcard"><h2>🔒 Developer Panel</h2><input id="devPass" type="password" placeholder="Пароль"><button onclick="devLogin()">Войти</button><button onclick="document.getElementById('devLogin').style.display='none'">Отмена</button></div>
+</div>
+<style>
+.devpanel{position:fixed;inset:5%;z-index:9999;background:rgba(3,7,14,.94);border:1px solid #28f0c8;border-radius:18px;box-shadow:0 0 35px rgba(0,255,220,.25);padding:10px;color:#dff;overflow:auto;backdrop-filter:blur(8px)}
+.devhead{display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(3,7,14,.97);padding:8px;z-index:2}.devhead button{width:auto}
+.devtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}.devtabs button{font-size:12px}
+.devgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.devgrid button{min-height:44px}
+.devsection{border:1px solid #24495a;border-radius:12px;padding:8px;margin:8px 0}.devsection h3{margin:0 0 7px;color:#52ffd8;font-size:14px}
+.devlogin{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center}.devcard{background:#08111b;border:1px solid #28f0c8;border-radius:16px;padding:20px;width:min(340px,88vw);box-shadow:0 0 35px rgba(0,255,220,.25)}.devcard input{width:100%;box-sizing:border-box;margin:8px 0}
+</style>
+
+<script>
+/* ===== FINAL GAME SYSTEMS ===== */
+const FINAL_KEY='SIM_FINAL';
+const F=(x)=>document.getElementById(x);
+function finalEnsure(){
+  s.final=s.final||{};
+  Object.assign(s.final,{
+    suit:s.final.suit||1, suitXP:s.final.suitXP||0,
+    asteroidLevel:s.final.asteroidLevel||1,
+    rareChance:s.final.rareChance||0,
+    activeCard:s.final.activeCard||0, activePet:s.final.activePet||0,
+    pets:s.final.pets||{0:1,1:0,2:0},
+    petLv:s.final.petLv||{0:1,1:1,2:1},
+    cards:s.final.cards||[0,0,0,0,0],
+    equip:s.final.equip||[],
+    research:s.final.research||[0,0,0,0,0],
+    safes:s.final.safes||{small:0,medium:0,large:0},
+    asteroidNext:s.final.asteroidNext||Date.now()+180000,
+    priceNext:s.final.priceNext||Date.now()+90000,
+    weatherNext:s.final.weatherNext||Date.now()+600000,
+    eventNext:s.final.eventNext||Date.now()+3600000,
+    weather:s.final.weather||'☀️ Ясно',
+    price:s.final.price||5,
+    event:s.final.event||'',
+    tutorial:s.final.tutorial||0,
+    round:s.round||1,
+    challenges:s.final.challenges||[
+      {t:'Добыть 50 руды',g:2,p:0},
+      {t:'Продать 100 руды',g:3,p:0},
+      {t:'Открыть 1 зону',g:2,p:0}
+    ],
+    caseHistory:s.final.caseHistory||[]
+  });
+}
+finalEnsure();
+
+const SUIT_COST=[0,0,500,1500,4000,10000,25000,60000,150000];
+const SUIT_BONUS=[0,0,0,.10,.10,.20,.20,.20,.30];
+const AST_COST=[0,500,1500,4000,10000];
+const AST_BONUS=[0,0,.50,1.0,1.5,2.0];
+const PETS=[
+  ['Лунный кот',200,'+5% добычи'],
+  ['Нео-ящер',1000,'+10% офлайн'],
+  ['Кибер-ворон',5000,'+0.2% редкой руды']
+];
+const CARDS=[
+  ['Звёздный шахтёр','+10% добычи'],['Пилот удачи','+0.3% редкой руды'],
+  ['Инженер','-10% стоимости улучшений'],['Собиратель','+25% офлайн'],['Капитан флота','+1 дрон-бонус']
+];
+const EQUIP=[
+  ['Титановая лопата',1000,'+10% добычи'],['Нео-костюм',5000,'+15% добычи'],
+  ['Гравитационный рюкзак',10000,'+50 вместимости'],['Интеллектуальный шлем',25000,'+10% офлайн'],
+  ['Магнитные перчатки',50000,'+0.2% редкой руды']
+];
+const TECH=[
+  ['Квантовый бур',50,'+15% добычи'],['Автосборщик',100, '+1 руда/мин'],
+  ['Анализатор руды',150,'+0.2% редкой руды'],['Криокамера',250,'+25% офлайн'],
+  ['Нанопринтер',500,'-20% стоимости улучшений']
+];
+function finalSave(){localStorage.setItem('SIM_FINAL',JSON.stringify(s));localStorage.setItem(K,JSON.stringify(s));}
+function finalBonus(type){
+  let x=0;
+  if(type==='mine'){
+    x+=SUIT_BONUS[Math.min(8,s.final.suit)];
+    if(s.final.activeCard===0&&s.final.cards[0])x+=.10;
+    if(s.final.equip.includes(0))x+=.10;if(s.final.equip.includes(1))x+=.15;
+    if(s.final.research[0])x+=.15;
+    if(s.final.activePet===0)x+=.05;
+  }
+  if(type==='offline'){
+    if(s.final.activeCard===3)x+=.25;if(s.final.equip.includes(3))x+=.10;
+    if(s.final.research[3])x+=.25;if(s.final.activePet===1)x+=.10;
+    x+=s.skills?s.skills.offline*.10:0;
+  }
+  if(type==='luck'){
+    x+=s.final.rareChance;
+    if(s.final.activeCard===1)x+=.003;if(s.final.equip.includes(4))x+=.002;
+    if(s.final.research[2])x+=.002;if(s.final.activePet===2)x+=.002;
+  }
+  return x;
+}
+function finalRate(){
+  let r=(s.workers||0)+(s.drones||0)*.5;
+  r*=1+finalBonus('mine');
+  r*=1+AST_BONUS[Math.min(5,s.final.asteroidLevel)];
+  if(s.final.research[1])r+=1;
+  if(s.final.weather.includes('туман'))r*=.79;
+  if(s.final.weather.includes('комет'))r*=2;
+  if(s.final.event.includes('метеор'))r*=3;
+  if(s.final.event.includes('кризис'))r*=.5;
+  if(s.boost&&s.boost>Date.now())r*=2;
+  return Math.max(0,r);
+}
+function finalCap(){
+  let c=25*(s.zones||1);
+  if(s.final.equip.includes(2))c+=50;
+  return c;
+}
+function rareRoll(){
+  let chance=.0015+finalBonus('luck');
+  if(s.final.event.includes('солнеч'))chance*=2;
+  if(s.final.event.includes('радиац'))chance=0;
+  return Math.random()<chance;
+}
+function suitUp(){
+  let n=s.final.suit+1;if(n>8)return;
+  let c=SUIT_COST[n];if(s.money>=c){s.money-=c;s.final.suit=n;finalSave();render();finalUI()}
+}
+function asteroidUp(){
+  let n=s.final.asteroidLevel+1;if(n>5)return;
+  let c=AST_COST[n];if(s.money>=c){s.money-=c;s.final.asteroidLevel=n;finalSave();render();finalUI()}
+}
+function buyPet(i){
+  if(s.final.pets[i]){s.final.activePet=i;finalSave();finalUI();return}
+  if(s.money>=PETS[i][1]){s.money-=PETS[i][1];s.final.pets[i]=1;s.final.activePet=i;finalSave();render();finalUI()}
+}
+function petUp(i){
+  if(!s.final.pets[i])return;
+  let lv=s.final.petLv[i]||1;if(lv>=5)return;
+  let c=100*lv;if(s.money>=c){s.money-=c;s.final.petLv[i]=lv+1;finalSave();render();finalUI()}
+}
+function cardRoll(){
+  if(Math.random()>.0001)return;
+  let i=Math.floor(Math.random()*5);s.final.cards[i]=1;
+  if(!s.final.activeCard)s.final.activeCard=i+1;
+}
+function buyEquip(i){
+  if(s.final.equip.includes(i))return;
+  let c=EQUIP[i][1];if(s.money>=c){s.money-=c;s.final.equip.push(i);finalSave();render();finalUI()}
+}
+function techUp(i){
+  if(s.final.research[i])return;
+  if(s.rp>=TECH[i][1]){s.rp-=TECH[i][1];s.final.research[i]=1;finalSave();finalUI()}
+}
+function openFinalCase(kind){
+  openCase(kind); finalUI();
+}
+function weatherRoll(){
+  let r=Math.random();
+  s.final.weather=r<.40?'☀️ Ясно':r<.65?'🌫️ Туман':r<.85?'🧲 Магнитная буря':'☄️ Рой комет';
+}
+function eventRollFinal(){
+  if(Math.random()>.45){s.final.event='';return}
+  let a=['☄️ Метеоритный дождь','☀️ Солнечная вспышка','💰 Обвал цен','🧪 Технопрорыв','⚠️ Технический сбой','☢️ Радиация','🔻 Энергокризис'];
+  s.final.event=a[Math.floor(Math.random()*a.length)];
+}
+function priceRoll(){s.final.price=1+Math.floor(Math.random()*10)}
+function asteroidPulse(){s.final.asteroidNext=Date.now()+180000}
+function finalTick(){
+  finalEnsure();
+  let now=Date.now();
+  if(now>=s.final.asteroidNext)asteroidPulse();
+  if(now>=s.final.priceNext){s.final.priceNext=now+90000;priceRoll()}
+  if(now>=s.final.weatherNext){s.final.weatherNext=now+600000;weatherRoll()}
+  if(now>=s.final.eventNext){s.final.eventNext=now+1800000;eventRollFinal()}
+  let g=finalRate()/60;
+  if(Math.random()<.003){g+=rareRoll()?10:0}
+  s.ore=Math.min(finalCap(),s.ore+g);s.total+=g;s.exp+=g;
+  while(s.exp>=s.level*100){s.exp-=s.level*100;s.level++;s.crystals+=([5,10,20,30,50,75,100].includes(s.level)?2:0)}
+  cardRoll();
+  s.records=s.records||{};s.records.bestMoney=Math.max(s.records.bestMoney||0,s.money);s.records.bestOre=Math.max(s.records.bestOre||0,s.ore);
+  finalSave();render();finalUI();
+}
+function finalUI(){
+  let box=F('finalSystems'); if(!box)return;
+  box.innerHTML=`
+  <div class="notice">⏱ Астероид: ${Math.max(0,Math.ceil((s.final.asteroidNext-Date.now())/1000))}с · 💰 Цена: ${s.final.price} · ${s.final.weather} · ${s.final.event||'Событий нет'}</div>
+  <div class="item"><b>🧑‍🚀 Костюм</b> · уровень ${s.final.suit}/8 · +${Math.round(finalBonus('mine')*100)}% добычи <button onclick="suitUp()">Улучшить</button></div>
+  <div class="item"><b>🪨 Астероид</b> · уровень ${s.final.asteroidLevel}/5 <button onclick="asteroidUp()">Улучшить</button></div>
+  <div class="item"><b>🐾 Питомцы</b><br>${PETS.map((p,i)=>`${p[0]} · ${s.final.pets[i]?'куплен':'не куплен'} · ур.${s.final.petLv[i]||1} <button onclick="buyPet(${i})">${s.final.pets[i]?'Активировать':'Купить '+p[1]}</button> <button onclick="petUp(${i})">+уровень</button>`).join('<br>')}</div>
+  <div class="item"><b>🃏 Карты астронавтов</b><br>${CARDS.map((c,i)=>`${c[0]} · ${s.final.cards[i]?'получена':'???'} ${s.final.cards[i]?'<button onclick="s.final.activeCard='+i+';finalSave();finalUI()">Активировать</button>':''}`).join('<br>')}</div>
+  <div class="item"><b>🧰 Оборудование</b><br>${EQUIP.map((e,i)=>`${e[0]} · ${s.final.equip.includes(i)?'✓':'—'} <button onclick="buyEquip(${i})">${s.final.equip.includes(i)?'Куплено':'Купить '+e[1]}</button>`).join('<br>')}</div>
+  <div class="item"><b>🔬 Лаборатория</b><br>${TECH.map((t,i)=>`${t[0]} · ${s.final.research[i]?'✓':'—'} · ${t[1]} RP <button onclick="techUp(${i})">${s.final.research[i]?'Изучено':'Исследовать'}</button>`).join('<br>')}</div>
+  </div>`;
+}
+function showFinalSystems(){
+  let scr=F('stats');if(scr){scr.innerHTML += '<div id="finalSystems" class="list"></div>';finalUI()}
+}
+function tutorialNext(){
+  s.final.tutorial=Math.min(10,s.final.tutorial+1);finalSave();finalUI();
+}
+function sellOreFinal(){
+  let q=Math.floor(s.ore),p=s.final.price;
+  if(q<=0)return;
+  s.ore-=q;s.money+=q*p;s.sold+=q;s.exp+=q;
+  finalSave();render();finalUI();
+}
+function newEraFinal(){
+  s.crystals=Math.floor((s.crystals||0)*.5);s.money=Math.floor((s.money||0)*.25);
+  s.round=(s.round||1)+1;s.zones=Math.max(1,s.zones||1);s.level=1;s.exp=0;s.ore=0;s.final.suit=1;s.final.asteroidLevel=1;
+  finalSave();render();finalUI();
+}
+
+/* Button-only developer panel */
+const DEV_PASS='List1448';
+function openDev(){F('devLogin').style.display='flex';F('devPass').focus()}
+function devLogin(){if(F('devPass').value===DEV_PASS){F('devLogin').style.display='none';F('devPanel').style.display='block';devTab('res')}else alert('Неверный пароль')}
+function closeDev(){F('devPanel').style.display='none'}
+function devTab(t){
+ let c=F('devContent');
+ let blocks={
+ res:`<div class=devsection><h3>💰 Ресурсы</h3><div class=devgrid>
+ <button onclick="s.money+=1000;finalSave();render()">+1 000 🪙</button><button onclick="s.money+=100000;finalSave();render()">+100 000 🪙</button>
+ <button onclick="s.crystals+=10;finalSave();render()">+10 💎</button><button onclick="s.crystals+=1000;finalSave();render()">+1000 💎</button>
+ <button onclick="s.ore=finalCap();render()">Заполнить склад</button><button onclick="s.ore=0;render()">Очистить склад</button></div></div>`,
+ mine:`<div class=devsection><h3>⛏ Добыча</h3><div class=devgrid>
+ <button onclick="s.workers+=1;finalSave();render()">+1 рабочий</button><button onclick="s.workers+=100;finalSave();render()">+100 рабочих</button>
+ <button onclick="s.drones+=1;finalSave();render()">+1 дрон</button><button onclick="s.drones+=20;finalSave();render()">+20 дронов</button>
+ <button onclick="s.final.suit=8;finalSave();finalUI()">Костюм 8</button><button onclick="s.final.asteroidLevel=5;finalSave();finalUI()">Астероид 5</button></div></div>`,
+ prog:`<div class=devsection><h3>📈 Прогресс</h3><div class=devgrid>
+ <button onclick="s.level=100;s.exp=0;finalSave();render()">Уровень 100</button><button onclick="s.crystals+=100;finalSave();render()">+100 кристаллов</button>
+ <button onclick="s.round++;finalSave();render()">+1 Новая эра</button><button onclick="s.story=10;s.final.tutorial=10;finalSave();finalUI()">История + tutorial</button>
+ <button onclick="s.rp=9999;finalSave();finalUI()">+9999 RP</button><button onclick="s.final.cards=[1,1,1,1,1];finalSave();finalUI()">Все карты</button></div></div>`,
+ world:`<div class=devsection><h3>🌌 Мир</h3><div class=devgrid>
+ <button onclick="s.zones+=1;finalSave();render()">+1 зона</button><button onclick="s.zones=10;finalSave();render()">10 зон</button>
+ <button onclick="s.final.weather='☄️ Рой комет';finalSave();finalUI()">Погода: кометы</button><button onclick="s.final.weather='🧲 Магнитная буря';finalSave();finalUI()">Погода: буря</button>
+ <button onclick="s.final.event='☄️ Метеоритный дождь';finalSave();finalUI()">Событие: ×3</button><button onclick="s.final.event='';finalSave();finalUI()">Сбросить событие</button></div></div>`,
+ systems:`<div class=devsection><h3>⚙ Системы</h3><div class=devgrid>
+ <button onclick="s.final.pets={0:1,1:1,2:1};finalSave();finalUI()">Все питомцы</button><button onclick="s.final.equip=[0,1,2,3,4];finalSave();finalUI()">Всё оборудование</button>
+ <button onclick="s.final.research=[1,1,1,1,1];finalSave();finalUI()">Все технологии</button><button onclick="s.safes={small:1,medium:1,large:1};finalSave();renderV3()">Все сейфы</button>
+ <button onclick="s.daily.done=[1,1,1];s.weekly.done=[1,1];finalSave();renderV3()">Задания выполнены</button><button onclick="s.final.challenges.forEach(x=>x.p=x.g);finalSave();finalUI()">Испытания выполнены</button></div></div>`,
+ save:`<div class=devsection><h3>💾 Сохранение</h3><div class=devgrid>
+ <button onclick="finalSave()">Сохранить сейчас</button><button onclick="location.reload()">Перезапустить игру</button>
+ <button onclick="localStorage.removeItem('SIM_FINAL');localStorage.removeItem(K);location.reload()">Полный сброс</button><button onclick="alert('Ключ сохранения: '+FINAL_KEY)">Показать ключ</button></div></div>`
+ };
+ c.innerHTML=blocks[t]||blocks.res;
+}
+
+/* Developer panel can be opened from keyboard too, but all gameplay interaction is via buttons. */
+document.addEventListener('keydown',e=>{if(e.key==='F2')openDev()});
+
+/* Patch the main game loop without deleting earlier mechanics. */
+finalEnsure();
+showFinalSystems();
+setInterval(finalTick,1000);
+setInterval(()=>{try{finalSave()}catch(e){}},30000);
+</script>
+<button class="devopen" onclick="openDev()">🛠</button><style>.devopen{position:fixed;right:10px;bottom:10px;width:46px!important;height:46px;border-radius:50%;z-index:5000}</style></body></html>
